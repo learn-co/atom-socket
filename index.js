@@ -1,39 +1,30 @@
 const pagebus = require('page-bus')
+const bus = pagebus()
 const sockets = {}
+const path = require('path')
+const remote = require('remote')
+const BrowserWindow = remote.require('browser-window')
 
-module.exports = {
-  getInstance: (key, url) => {
-    if (sockets[url]) {
-      return sockets[url]
-    } else {
-      var socket = new SocketConnection(key, url)
-      sockets[url] = socket
-      return socket
-    }
-  }
+if (!localStorage.getItem('socket:drawer:running')) {
+  localStorage.setItem('socket:drawer:running', process.pid)
+  var wsWindow = new BrowserWindow({webPreferences: {devTools: true}})
+  wsWindow.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
+  wsWindow.webContents.openDevTools()
 }
 
+module.exports =
 class SocketConnection {
   constructor(key, url) {
     this.key = key
     this.url = url
-    this.bus = pagebus({key: this.key})
-    this.ws = new WebSocket(url)
-
-    this.ws.onopen = () => {
-      this.bus.emit('open')
-    }
-
-    this.ws.onmessage = (msg) => {
-      this.bus.emit('message', msg.data)
-    }
+    bus.emit('create', {key: this.key, url: this.url})
   }
 
   on(event, cb) {
-    this.bus.on(event, cb)
+    bus.on(`${this.key}:${event}`, cb)
   }
 
   send(msg) {
-    this.ws.send(msg)
+    bus.emit(`${this.key}:send`, msg)
   }
 }

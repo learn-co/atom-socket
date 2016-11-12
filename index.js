@@ -7,18 +7,32 @@ const BrowserWindow = remote.require('browser-window')
 
 const sockets = {}
 
-if (!localStorage.getItem('socket:drawer:running')) {
-  localStorage.setItem('socket:drawer:running', process.pid)
-  var wsWindow = new BrowserWindow({webPreferences: {devTools: true}})
-  wsWindow.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
-  wsWindow.webContents.openDevTools()
+getWebsocketManager = () => {
+  var wsManager
+
+  if (!localStorage.getItem('socket:drawer:running')) {
+    localStorage.setItem('socket:drawer:running', 'booting')
+    wsManager = new BrowserWindow({show: false, webPreferences: {devTools: true}})
+    wsManager.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
+    wsManager.webContents.openDevTools()
+  } else {
+    var pid = localStorage.getItem('socket:drawer:running')
+    console.log('pid', pid)
+    wsManager = BrowserWindow.getFocusedWindow(pid)
+  }
+
+  return wsManager
 }
+
+getWebsocketManager()
 
 module.exports = class SocketDrawer {
   constructor(key, url) {
+    this._show = false
     this.key = key
     this.url = url
     bus.emit('create', {key: this.key, url: this.url, time: Date.now()})
+    bus.on('hide', () => { this.hide() })
   }
 
   on(event, cb) {
@@ -35,5 +49,23 @@ module.exports = class SocketDrawer {
 
   reset() {
     bus.emit(`${this.key}:reset:request`)
+  }
+
+  toggle() {
+    if (this._show) {
+      this.hide()
+    } else {
+      this.show()
+    }
+  }
+
+  show() {
+    this._show = true
+    getWebsocketManager().show()
+  }
+
+  hide() {
+    this._show = false
+    getWebsocketManager().hide()
   }
 }

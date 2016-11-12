@@ -5,6 +5,10 @@ window.onbeforeunload = () => {
   localStorage.removeItem('socket:drawer:running')
 }
 
+document.getElementById('hide').addEventListener('click', () => {
+  bus.emit('hide')
+})
+
 getSocket = (key, url) => {
   var ws = new WebSocket(url)
   websockets[key] = ws
@@ -35,6 +39,7 @@ getSocket = (key, url) => {
 }
 
 bus.on('create', ({key, url}) => {
+  localStorage.setItem('socket:drawer:running', process.pid)
   console.log(`received request for ${key}: ${url}`)
   if (websockets[key]) {
     console.log(`found websocket from cache for ${key}: ${url}`)

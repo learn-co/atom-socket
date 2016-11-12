@@ -1,9 +1,11 @@
-const pagebus = require('page-bus')
-const bus = pagebus()
-const sockets = {}
 const path = require('path')
+const bus = require('page-bus')()
+
+// Atom API
 const remote = require('remote')
 const BrowserWindow = remote.require('browser-window')
+
+const sockets = {}
 
 if (!localStorage.getItem('socket:drawer:running')) {
   localStorage.setItem('socket:drawer:running', process.pid)
@@ -12,12 +14,11 @@ if (!localStorage.getItem('socket:drawer:running')) {
   wsWindow.webContents.openDevTools()
 }
 
-module.exports =
-class SocketConnection {
+module.exports = class SocketDrawer {
   constructor(key, url) {
     this.key = key
     this.url = url
-    bus.emit('create', {key: this.key, url: this.url})
+    bus.emit('create', {key: this.key, url: this.url, time: Date.now()})
   }
 
   on(event, cb) {

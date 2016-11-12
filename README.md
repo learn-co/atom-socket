@@ -5,7 +5,7 @@ Share websockets in Atom Packages.
 
 ## How It Works
 
-AtomSocket uses Atom's `localStorage` API (via [page-bus](https://github.com/substack/page-bus)) to share websocket connections inside Atom packges across render processes.
+AtomSocket uses Atom's `localStorage` API (via [page-bus](https://github.com/substack/page-bus)) to share websocket connections in Atom packages across render processes.
 
 ## Install
 

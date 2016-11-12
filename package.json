@@ -1,12 +1,12 @@
 {
   "name": "atom-socket",
-  "version": "0.0.0",
-  "description": "A shared websocket for Atom Packages",
+  "version": "0.0.1",
+  "description": "Share websockets in Atom Packages",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Josh Rowley",
   "license": "MIT",
   "dependencies": {
     "page-bus": "3.0.1"

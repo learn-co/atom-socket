@@ -14,7 +14,7 @@ if (!localStorage.getItem('socket:drawer:running')) {
   wsWindow.webContents.openDevTools()
 }
 
-module.exports = class SocketDrawer {
+module.exports = class AtomSocket {
   constructor(key, url) {
     this.key = key
     this.url = url

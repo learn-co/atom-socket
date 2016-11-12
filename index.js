@@ -28,4 +28,12 @@ module.exports = class SocketDrawer {
   send(msg) {
     bus.emit(`${this.key}:send`, msg)
   }
+
+  close() {
+    bus.emit(`${this.key}:close:request`)
+  }
+
+  reset() {
+    bus.emit(`${this.key}:reset:request`)
+  }
 }

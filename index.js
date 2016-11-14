@@ -9,7 +9,7 @@ const sockets = {}
 
 if (!localStorage.getItem('socket:drawer:running')) {
   localStorage.setItem('socket:drawer:running', process.pid)
-  var wsWindow = new BrowserWindow({webPreferences: {devTools: true}})
+  var wsWindow = new BrowserWindow({show: false, webPreferences: {devTools: true}})
   wsWindow.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
   wsWindow.webContents.openDevTools()
 }

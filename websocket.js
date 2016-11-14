@@ -22,7 +22,7 @@ setTimeout(() => {
   }
 
   window.onbeforeunload = () => {
-    localStorage.removeItem('socket:drawer:running')
+    localStorage.removeItem('atom-socket:running')
   }
 
   getSocket = (key, url) => {

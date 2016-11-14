@@ -13,8 +13,8 @@ const waitForWSManager = new Promise((resolve, reject) => {
   bus.on('manager:ready', resolve)
 })
 
-if (!localStorage.getItem('socket:drawer:running')) {
-  localStorage.setItem('socket:drawer:running', process.pid)
+if (!localStorage.getItem('atom-socket:running')) {
+  localStorage.setItem('atom-socket:running', process.pid)
   wsWindow = new BrowserWindow({show: false, webPreferences: {devTools: true}})
   wsWindow.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
   wsWindow.webContents.openDevTools()

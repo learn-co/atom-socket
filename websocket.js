@@ -58,6 +58,7 @@ setTimeout(() => {
     console.log(`received request for ${key}: ${url}`)
     if (websockets[key]) {
       console.log(`found websocket from cache for ${key}: ${url}`)
+      bus.emit(`${key}:open:cached`)
     } else {
       console.log(`creating new websocket for ${key}: ${url}`)
 

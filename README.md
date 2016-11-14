@@ -35,6 +35,10 @@ socket.on('message', (msg) => {
   console.log(msg)
 })
 
+socket.on('open:cached', () => {
+  console.log('Client Connected through Existing WebSocket')
+})
+
 socket.send('hello world')
 
 socket.close()

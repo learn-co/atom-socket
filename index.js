@@ -7,9 +7,15 @@ const BrowserWindow = remote.require('browser-window')
 
 const sockets = {}
 
+var wsWindow
+
+const waitForWSManager = new Promise((resolve, reject) => {
+  bus.on('manager:ready', resolve)
+})
+
 if (!localStorage.getItem('socket:drawer:running')) {
   localStorage.setItem('socket:drawer:running', process.pid)
-  var wsWindow = new BrowserWindow({show: false, webPreferences: {devTools: true}})
+  wsWindow = new BrowserWindow({show: false, webPreferences: {devTools: true}})
   wsWindow.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
   wsWindow.webContents.openDevTools()
 }
@@ -18,7 +24,28 @@ module.exports = class AtomSocket {
   constructor(key, url) {
     this.key = key
     this.url = url
-    bus.emit('create', {key: this.key, url: this.url, time: Date.now()})
+    this.debuggerOpen = false
+
+    bus.on('open:debugger', () => {
+      if (wsWindow) {
+        wsWindow.show()
+      }
+
+      this.debuggerOpen = true
+    })
+
+    bus.on('close:debugger', () => {
+      if (wsWindow) {
+        wsWindow.hide()
+      }
+
+      this.debuggerOpen = false
+    })
+
+    waitForWSManager.then(() => {
+      console.log('waited for manager', this.url)
+      bus.emit('create', {key: this.key, url: this.url, time: Date.now()})
+    })
   }
 
   on(event, cb) {
@@ -35,5 +62,21 @@ module.exports = class AtomSocket {
 
   reset() {
     bus.emit(`${this.key}:reset:request`)
+  }
+
+  toggleDebugger() {
+    if (this.debuggerOpen) {
+      this.closeDebugger()
+    } else {
+      this.openDebugger()
+    }
+  }
+
+  openDebugger() {
+    bus.emit('open:debugger')
+  }
+
+  closeDebugger() {
+    bus.emit('close:debugger')
   }
 }

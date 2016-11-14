@@ -15,6 +15,10 @@ setTimeout(() => {
   if (managers.length > 1) {
     window.close()
     return process.exit(0)
+  } else {
+    setInterval(() => {
+      bus.emit('manager:ready')
+    }, 1000)
   }
 
   window.onbeforeunload = () => {

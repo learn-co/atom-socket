@@ -38,7 +38,7 @@ setTimeout(() => {
 
     ws.onmessage = (msg) => {
       if (msg.data.length > chunker.CHUNK_SIZE) {
-        chunker.sendChunked(`${key}:message`, msg)
+        chunker.sendChunked(`${key}:message`, msg.data)
       } else {
         console.log(`received message for ${key}: ${url}`, msg.data)
         bus.emit(`${key}:message`, msg.data)

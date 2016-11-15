@@ -17,7 +17,6 @@ module.exports = {
   sendChunked(key, msg) {
     var id = Date.now()
     chunk(msg).forEach((chunk) => {
-      console.log('sending chunks for key ' + key)
       bus.emit(`${key}:chunk`, {id: id, chunk: chunk})
     })
     bus.emit(`${key}:chunk:done`, id)

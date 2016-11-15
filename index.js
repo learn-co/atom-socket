@@ -45,7 +45,6 @@ module.exports = class AtomSocket {
     })
 
     waitForWSManager.then(() => {
-      console.log('waited for manager', this.url)
       bus.emit('create', {key: this.key, url: this.url, time: Date.now()})
     })
   }
@@ -59,8 +58,6 @@ module.exports = class AtomSocket {
   }
 
   send(msg) {
-    console.log('attempting to send', msg.length)
-
     if (msg.length > chunker.CHUNK_SIZE) {
       chunker.sendChunked(`${this.key}:send`, msg)
     } else {

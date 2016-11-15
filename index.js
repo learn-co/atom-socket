@@ -1,6 +1,6 @@
 const path = require('path')
 const bus = require('page-bus')()
-const chunk = require('./chunk')
+const chunker = require('./chunker')
 
 // Atom API
 const remote = require('remote')
@@ -52,15 +52,7 @@ module.exports = class AtomSocket {
 
   on(event, cb) {
     if (event === 'message') {
-      bus.on(`${this.key}:message:chunk`, ({id, chunk}) => {
-        this.chunkBuffer[id] || (this.chunkBuffer[id] = '')
-        this.chunkBuffer[id] = this.chunkBuffer[id] + chunk
-      })
-
-      bus.on(`${this.key}:message:chunk:done`, (id) => {
-        cb(this.chunkBuffer[id])
-        delete this.chunkBuffer[id]
-      })
+      chunker.onChunked(`${this.key}:message`, cb)
     }
 
     bus.on(`${this.key}:${event}`, cb)
@@ -69,12 +61,8 @@ module.exports = class AtomSocket {
   send(msg) {
     console.log('attempting to send', msg.length)
 
-    if (msg.length > chunk.SIZE) {
-      var id = Date.now()
-      chunk(msg).forEach((chunk) => {
-        bus.emit(`${this.key}:send:chunk`, {id: id, chunk: chunk})
-      })
-      bus.emit(`${this.key}:send:chunk:done`, id)
+    if (msg.length > chunker.CHUNK_SIZE) {
+      chunker.sendChunked(`${this.key}:send`, msg)
     } else {
       bus.emit(`${this.key}:send`, msg)
     }

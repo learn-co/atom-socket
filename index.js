@@ -1,5 +1,6 @@
 const path = require('path')
 const bus = require('page-bus')()
+const chunk = require('./chunk')
 
 // Atom API
 const remote = require('remote')
@@ -15,7 +16,7 @@ const waitForWSManager = new Promise((resolve, reject) => {
 
 if (!localStorage.getItem('atom-socket:running')) {
   localStorage.setItem('atom-socket:running', process.pid)
-  wsWindow = new BrowserWindow({show: false, webPreferences: {devTools: true}})
+  wsWindow = new BrowserWindow({webPreferences: {devTools: true}})
   wsWindow.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
   wsWindow.webContents.openDevTools()
 }
@@ -53,7 +54,17 @@ module.exports = class AtomSocket {
   }
 
   send(msg) {
-    bus.emit(`${this.key}:send`, msg)
+    console.log('attempting to send', msg.length)
+
+    if (msg.length > chunk.SIZE) {
+      var id = Date.now()
+      chunk(msg).forEach((chunk) => {
+        bus.emit(`${this.key}:send:chunk`, {id: id, chunk: chunk})
+      })
+      bus.emit(`${this.key}:send:chunk:done`, id)
+    } else {
+      bus.emit(`${this.key}:send`, msg)
+    }
   }
 
   close() {

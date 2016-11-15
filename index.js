@@ -3,8 +3,7 @@ const bus = require('page-bus')()
 const chunker = require('./chunker')
 
 // Atom API
-const remote = require('remote')
-const BrowserWindow = remote.require('browser-window')
+const {BrowserWindow} = require('electron').remote
 
 const sockets = {}
 
@@ -14,9 +13,14 @@ const waitForWSManager = new Promise((resolve, reject) => {
   bus.on('manager:ready', resolve)
 })
 
-if (!localStorage.getItem('atom-socket:running')) {
-  localStorage.setItem('atom-socket:running', process.pid)
-  wsWindow = new BrowserWindow({webPreferences: {devTools: true}})
+var isManagerRunning = BrowserWindow.getAllWindows().map((win) => {
+  return win.getTitle()
+}).indexOf(localStorage.getItem('atom-socket:running')) > -1
+
+if (!isManagerRunning) {
+  var id = Date.now().toString()
+  localStorage.setItem('atom-socket:running', id)
+  wsWindow = new BrowserWindow({title: id, webPreferences: {devTools: true}})
   wsWindow.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
   wsWindow.webContents.openDevTools()
 }

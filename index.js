@@ -26,6 +26,7 @@ module.exports = class AtomSocket {
     this.key = key
     this.url = url
     this.debuggerOpen = false
+    this.chunkBuffer = {}
 
     bus.on('open:debugger', () => {
       if (wsWindow) {
@@ -50,6 +51,18 @@ module.exports = class AtomSocket {
   }
 
   on(event, cb) {
+    if (event === 'message') {
+      bus.on(`${this.key}:message:chunk`, ({id, chunk}) => {
+        this.chunkBuffer[id] || (this.chunkBuffer[id] = '')
+        this.chunkBuffer[id] = this.chunkBuffer[id] + chunk
+      })
+
+      bus.on(`${this.key}:message:chunk:done`, (id) => {
+        cb(this.chunkBuffer[id])
+        delete this.chunkBuffer[id]
+      })
+    }
+
     bus.on(`${this.key}:${event}`, cb)
   }
 

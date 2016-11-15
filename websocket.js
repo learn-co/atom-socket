@@ -2,6 +2,7 @@ const bus = require('page-bus')()
 const websockets = {}
 const managers = []
 const chunkBuffer = {}
+const chunk = require('./chunk')
 
 console.log(`current process is ${process.pid}`)
 
@@ -36,8 +37,18 @@ setTimeout(() => {
     }
 
     ws.onmessage = (msg) => {
-      console.log(`received message for ${key}: ${url}`, msg.data)
-      bus.emit(`${key}:message`, msg.data)
+      if (msg.data.length > chunk.SIZE) {
+        console.log('chunking incoming message')
+        var id = Date.now()
+        chunk(msg.data).forEach((chunk) => {
+          console.log('emitting chunk')
+          bus.emit(`${key}:message:chunk`, {id: id, chunk: chunk})
+        })
+        bus.emit(`${key}:message:chunk:done`, id)
+      } else {
+        console.log(`received message for ${key}: ${url}`, msg.data)
+        bus.emit(`${key}:message`, msg.data)
+      }
     }
 
     ws.onerror = (err) => {
@@ -79,6 +90,7 @@ setTimeout(() => {
       bus.on(`${key}:send:chunk:done`, (id) => {
         console.log('chunked done')
         ws.send(chunkBuffer[id])
+        delete chunkBuffer[id]
       })
 
       bus.on(`${key}:close:request`, () => {

@@ -20,7 +20,7 @@ var isManagerRunning = BrowserWindow.getAllWindows().map((win) => {
 if (!isManagerRunning) {
   var id = Date.now().toString()
   localStorage.setItem('atom-socket:running', id)
-  wsWindow = new BrowserWindow({title: id, webPreferences: {devTools: true}})
+  wsWindow = new BrowserWindow({show: false, title: id, webPreferences: {devTools: true}})
   wsWindow.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
   wsWindow.webContents.openDevTools()
 }
@@ -29,24 +29,7 @@ module.exports = class AtomSocket {
   constructor(key, url) {
     this.key = key
     this.url = url
-    this.debuggerOpen = false
     this.chunkBuffer = {}
-
-    bus.on('open:debugger', () => {
-      if (wsWindow) {
-        wsWindow.show()
-      }
-
-      this.debuggerOpen = true
-    })
-
-    bus.on('close:debugger', () => {
-      if (wsWindow) {
-        wsWindow.hide()
-      }
-
-      this.debuggerOpen = false
-    })
 
     waitForWSManager.then(() => {
       bus.emit('create', {key: this.key, url: this.url, time: Date.now()})
@@ -78,18 +61,10 @@ module.exports = class AtomSocket {
   }
 
   toggleDebugger() {
-    if (this.debuggerOpen) {
-      this.closeDebugger()
-    } else {
-      this.openDebugger()
-    }
-  }
-
-  openDebugger() {
-    bus.emit('open:debugger')
-  }
-
-  closeDebugger() {
-    bus.emit('close:debugger')
+    var win = BrowserWindow.getAllWindows().find((win) => {
+      return win.getTitle() === localStorage.getItem('atom-socket:running')
+    })
+    if (!win) { return }
+    win.isVisible() ? win.hide() : win.show()
   }
 }

@@ -1,6 +1,7 @@
 const React = require('react')
 const ReactDOM = require('react-dom')
 const _ = require('lodash')
+import JSONTree from 'react-json-tree'
 
 const log = []
 
@@ -42,7 +43,6 @@ class Log extends React.Component {
     var index = this.state.events.indexOf(event)
 
     if (index > -1) {
-      console.log('debugging')
       var events = this.state.events.concat([])
       events.splice(index, 1)      
       this.setState({events: events})
@@ -78,7 +78,7 @@ class Log extends React.Component {
       return <li key={ i } style={ style } onClick={ () => { this.filterEvent(event) } }>{ event }</li>
     })
 
-    var log = this.state.log.slice(0, 99).map((item, i) => {
+    var log = this.state.log.map((item, i) => {
       if ((this.state.connections.length > 0) && this.state.connections.indexOf(item.key) === -1) {
         return false
       }
@@ -87,8 +87,22 @@ class Log extends React.Component {
         return false
       }
 
-      return <li key={ i }>{ `${item.key}:${item.event || ''}: ${item.data || ''}` }</li>
-    })
+      var json
+
+      try {
+        var data = JSON.parse(item.data)
+        json = <JSONTree data={ data } hideRoot={ true }/>
+      } catch (err) {
+        json = <div><strong>{ item.data }</strong></div>
+      }
+
+      return (
+        <li key={ i }>
+          <span>{ `${item.key}:${item.event || ''}` }</span> 
+          { json }
+        </li>
+      )
+    }).slice(0, 99)
 
     return (
       <div>

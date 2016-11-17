@@ -29,7 +29,6 @@ module.exports = class AtomSocket {
   constructor(key, url) {
     this.key = key
     this.url = url
-    this.chunkBuffer = {}
 
     waitForWSManager.then(() => {
       bus.emit('create', {key: this.key, url: this.url, time: Date.now()})

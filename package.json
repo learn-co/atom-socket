@@ -9,6 +9,8 @@
   "author": "Josh Rowley",
   "license": "MIT",
   "dependencies": {
-    "page-bus": "3.0.1"
+    "page-bus": "3.0.1",
+    "react": "15.4.0",
+    "react-dom": "15.4.0"
   }
 }

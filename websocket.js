@@ -4,6 +4,10 @@ const managers = []
 const chunkBuffer = {}
 const chunker = require('./chunker')
 
+const Debugger = require('./debugger')
+
+Debugger.start(document.getElementById('root'))
+
 console.log(`current process is ${process.pid}`)
 
 bus.on('websocket:manager:start', ({pid, time}) => {

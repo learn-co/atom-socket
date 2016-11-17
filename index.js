@@ -22,7 +22,7 @@ if (!isManagerRunning) {
   localStorage.setItem('atom-socket:running', id)
   wsWindow = new BrowserWindow({title: id, webPreferences: {devTools: true}})
   wsWindow.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
-  // wsWindow.webContents.openDevTools()
+  wsWindow.webContents.openDevTools()
 }
 
 module.exports = class AtomSocket {

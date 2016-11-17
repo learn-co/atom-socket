@@ -20,9 +20,9 @@ var isManagerRunning = BrowserWindow.getAllWindows().map((win) => {
 if (!isManagerRunning) {
   var id = Date.now().toString()
   localStorage.setItem('atom-socket:running', id)
-  wsWindow = new BrowserWindow({show: false, title: id, webPreferences: {devTools: true}})
+  wsWindow = new BrowserWindow({title: id, webPreferences: {devTools: true}})
   wsWindow.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
-  wsWindow.webContents.openDevTools()
+  // wsWindow.webContents.openDevTools()
 }
 
 module.exports = class AtomSocket {

@@ -4,14 +4,12 @@ const managers = []
 const chunkBuffer = {}
 const chunker = require('./chunker')
 
-const Debugger = require('./debugger')
+require('./debugger')
 
-Debugger.start(document.getElementById('root'))
-
-console.log(`current process is ${process.pid}`)
+log(`current process is ${process.pid}`)
 
 bus.on('websocket:manager:start', ({pid, time}) => {
-  console.log(`process ${pid} started at ${time}`)
+  log(`websocket manager process ${pid} started at ${time}`)
   managers.push({pid: pid, time: time})
 })
 
@@ -36,28 +34,29 @@ setTimeout(() => {
     websockets[key] = ws
 
     ws.onopen = () => {
-      console.log(`websocket open for ${key}: ${url}`)
+      log({key: key, event: 'open'})
       bus.emit(`${key}:open`)
     }
 
     ws.onmessage = (msg) => {
       if (msg.data.length > chunker.CHUNK_SIZE) {
+        log({key: key, event: 'message:chunked'})
         chunker.sendChunked(`${key}:message`, msg.data)
       } else {
-        console.log(`received message for ${key}: ${url}`, msg.data)
+        log({key: key, event: 'message', data: msg.data})
         bus.emit(`${key}:message`, msg.data)
       }
     }
 
     ws.onerror = (err) => {
       delete websockets[key]
-      console.log(`error for ${key}: ${url}`, err)
+      log({key: key, event: 'error', error: err})
       bus.emit(`${key}:error`, err)
     }
 
     ws.onclose = () => {
       delete websockets[key]
-      console.log(`websocket close for ${key}: ${url}`)
+      log({key: key, event: 'close'})
       bus.emit(`${key}:close`)
     }
 
@@ -65,31 +64,32 @@ setTimeout(() => {
   }
 
   bus.on('create', ({key, url}) => {
-    console.log(`received request for ${key}: ${url}`)
+    log({key: key, event: 'create'})
     if (websockets[key]) {
-      console.log(`found websocket from cache for ${key}: ${url}`)
+      log({key: key, event: 'cached'})
       bus.emit(`${key}:open:cached`)
     } else {
-      console.log(`creating new websocket for ${key}: ${url}`)
+      log({key: key, event: 'uncached'})
 
       var ws = getSocket(key, url)
 
       bus.on(`${key}:send`, (msg) => {
-        console.log(`sending message for ${key}: ${url}`, msg)
+        log({key: key, event: 'send', data: msg})
         ws.send(msg)
       })
 
       chunker.onChunked(`${key}:send`, (msg) => {
+        log({key: key, event: 'send:chunked'})
         ws.send(msg)
       })
 
       bus.on(`${key}:close:request`, () => {
-        console.log(`closing websocket for ${key}: ${url}`)
+        log({key: key, event: 'closing'})
         ws.close()
       })
 
       bus.on(`${key}:reset:request`, () => {
-        console.log(`resetting websocket for ${key}: ${url}`)
+        log({key: key, event: 'reset'})
         ws.close()
         ws = getSocket(key, url)
       })

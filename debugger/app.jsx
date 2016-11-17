@@ -37,7 +37,23 @@ class Log extends React.Component {
     }
   }
 
+  filterEvent(event) {
+    console.log(event)
+    var index = this.state.events.indexOf(event)
+
+    if (index > -1) {
+      console.log('debugging')
+      var events = this.state.events.concat([])
+      events.splice(index, 1)      
+      this.setState({events: events})
+    } else {
+      console.log('wu')
+      this.setState({events: _.uniq(this.state.events.concat([event]))})
+    }
+  }
+
   render() {
+    console.log(this.state.events)
     var connections = _.compact(_.uniq(_.map(this.state.log, (item) => {
       return item.key 
     }))).sort().map((name, i) => {
@@ -53,11 +69,21 @@ class Log extends React.Component {
     var events = _.compact(_.uniq(_.map(this.state.log, (item) => { 
       return item.event 
     }))).sort().map((event, i) => {
-      return <li key={ i }>{ event }</li>
+      var activeFilter = this.state.events.indexOf(event) > -1
+
+      var style = {
+        backgroundColor:  activeFilter ? 'red' : ''
+      }
+
+      return <li key={ i } style={ style } onClick={ () => { this.filterEvent(event) } }>{ event }</li>
     })
 
     var log = this.state.log.slice(0, 99).map((item, i) => {
       if ((this.state.connections.length > 0) && this.state.connections.indexOf(item.key) === -1) {
+        return false
+      }
+
+      if ((this.state.events.length > 0) && this.state.events.indexOf(item.event) === -1) {
         return false
       }
 

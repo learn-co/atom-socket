@@ -6,10 +6,7 @@ const chunker = require('./chunker')
 
 require('./debugger')
 
-log(`current process is ${process.pid}`)
-
 bus.on('websocket:manager:start', ({pid, time}) => {
-  log(`websocket manager process ${pid} started at ${time}`)
   managers.push({pid: pid, time: time})
 })
 

@@ -68,13 +68,11 @@ setTimeout(() => {
     }
 
     ws.onerror = (err) => {
-      delete websockets[key]
       console.log(`error for ${key}: ${url}`, err)
       bus.emit(`${key}:error`, err)
     }
 
     ws.onclose = () => {
-      delete websockets[key]
       console.log(`websocket close for ${key}: ${url}`)
       bus.emit(`${key}:close`)
     }

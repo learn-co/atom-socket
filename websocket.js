@@ -5,20 +5,12 @@ const chunkBuffer = {}
 const chunker = require('./chunker')
 const ReconnectingWebSocket = require('learn-reconnecting-websocket')
 
-const eachWebsocket = (callback) => {
-  for (prop in websockets) {
-    if (websockets.hasOwnProperty(prop)) {
-      callback(websockets[prop])
+const refreshAll = () => {
+  for (key in websockets) {
+    if (websockets.hasOwnProperty(key)) {
+      websockets[key].open()
     }
   }
-}
-
-const refreshAll = () => {
-  eachWebsocket( ws => ws.refresh() )
-}
-
-const openAll = () => {
-  eachWebsocket( ws => ws.open() )
 }
 
 console.log(`current process is ${process.pid}`)
@@ -43,14 +35,14 @@ setTimeout(() => {
   window.onbeforeunload = () => {
     localStorage.removeItem('atom-socket:running')
     window.removeEventListener('offline', refreshAll)
-    window.removeEventListener('online', openAll)
+    window.removeEventListener('online', refreshAll)
   }
 
   window.addEventListener('offline', refreshAll)
-  window.addEventListener('online', openAll)
+  window.addEventListener('online', refreshAll)
 
   getSocket = (key, url) => {
-    var ws = new ReconnectingWebSocket(url)
+    var ws = new ReconnectingWebSocket(url, null, {timeoutInterval: 5000})
     websockets[key] = ws
 
     ws.onopen = () => {

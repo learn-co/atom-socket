@@ -23,6 +23,7 @@ if (!isManagerRunning) {
   wsWindow = new BrowserWindow({show: false, title: id, webPreferences: {devTools: true}})
   wsWindow.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
   wsWindow.webContents.openDevTools()
+  window.wsDebug = () => wsWindow.show()
 }
 
 module.exports = class AtomSocket {

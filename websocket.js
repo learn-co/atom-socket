@@ -3,6 +3,15 @@ const websockets = {}
 const managers = []
 const chunkBuffer = {}
 const chunker = require('./chunker')
+const ReconnectingWebSocket = require('learn-reconnecting-websocket')
+
+const refreshAll = () => {
+  for (key in websockets) {
+    if (websockets.hasOwnProperty(key)) {
+      websockets[key].open()
+    }
+  }
+}
 
 console.log(`current process is ${process.pid}`)
 
@@ -25,10 +34,15 @@ setTimeout(() => {
 
   window.onbeforeunload = () => {
     localStorage.removeItem('atom-socket:running')
+    window.removeEventListener('offline', refreshAll)
+    window.removeEventListener('online', refreshAll)
   }
 
+  window.addEventListener('offline', refreshAll)
+  window.addEventListener('online', refreshAll)
+
   getSocket = (key, url) => {
-    var ws = new WebSocket(url)
+    var ws = new ReconnectingWebSocket(url, null, {timeoutInterval: 5000})
     websockets[key] = ws
 
     ws.onopen = () => {
@@ -46,13 +60,11 @@ setTimeout(() => {
     }
 
     ws.onerror = (err) => {
-      delete websockets[key]
       console.log(`error for ${key}: ${url}`, err)
       bus.emit(`${key}:error`, err)
     }
 
     ws.onclose = () => {
-      delete websockets[key]
       console.log(`websocket close for ${key}: ${url}`)
       bus.emit(`${key}:close`)
     }
@@ -86,8 +98,7 @@ setTimeout(() => {
 
       bus.on(`${key}:reset:request`, () => {
         console.log(`resetting websocket for ${key}: ${url}`)
-        ws.close()
-        ws = getSocket(key, url)
+        ws.refresh()
       })
     }
   })

@@ -82,13 +82,18 @@ setTimeout(() => {
 
       var ws = getSocket(key, url)
 
+      send = (msg) => {
+        var data = JSON.stringify({topic: key, payload: msg})
+        ws.send(data)
+      }
+
       bus.on(`${key}:send`, (msg) => {
         console.log(`sending message for ${key}: ${url}`, msg)
-        ws.send(msg)
+        send(msg)
       })
 
       chunker.onChunked(`${key}:send`, (msg) => {
-        ws.send(msg)
+        send(msg)
       })
 
       bus.on(`${key}:close:request`, () => {

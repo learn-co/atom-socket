@@ -51,11 +51,15 @@ setTimeout(() => {
     }
 
     ws.onmessage = (msg) => {
-      if (msg.data.length > chunker.CHUNK_SIZE) {
-        chunker.sendChunked(`${key}:message`, msg.data)
+      parsed = JSON.parse(msg.data)
+      key = parsed.topic
+      payload = parsed.payload
+
+      if (payload.length > chunker.CHUNK_SIZE) {
+        chunker.sendChunked(`${key}:message`, payload)
       } else {
-        console.log(`received message for ${key}: ${url}`, msg.data)
-        bus.emit(`${key}:message`, msg.data)
+        console.log(`received message for ${key}: ${url}`, payload)
+        bus.emit(`${key}:message`, payload)
       }
     }
 

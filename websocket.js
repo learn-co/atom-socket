@@ -28,8 +28,8 @@ setTimeout(() => {
     return process.exit(0)
   } else {
     setInterval(() => {
-      bus.emit('manager:ready')
-    }, 1000)
+      bus.emit('manager:ready', Date.now())
+    }, 500)
   }
 
   window.onbeforeunload = () => {

@@ -9,6 +9,7 @@
   "author": "Josh Rowley",
   "license": "MIT",
   "dependencies": {
+    "fast-mutex": "^1.0.2",
     "learn-reconnecting-websocket": "^1.0.1",
     "page-bus": "3.0.1"
   }

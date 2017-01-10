@@ -1,6 +1,8 @@
 const path = require('path')
 const bus = require('page-bus')()
 const chunker = require('./chunker')
+const FastMutex = require('fast-mutex')
+const mutex = new FastMutex()
 
 // Atom API
 const {BrowserWindow} = require('electron').remote
@@ -13,24 +15,31 @@ const waitForWSManager = new Promise((resolve, reject) => {
   bus.on('manager:ready', resolve)
 })
 
-var isManagerRunning = BrowserWindow.getAllWindows().map((win) => {
-  return win.getTitle()
-}).indexOf(localStorage.getItem('atom-socket:running')) > -1
-
-if (!isManagerRunning) {
+const startManager = () => {
   var id = Date.now().toString()
   localStorage.setItem('atom-socket:running', id)
   wsWindow = new BrowserWindow({show: false, title: id, webPreferences: {devTools: true}})
   wsWindow.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
   wsWindow.webContents.openDevTools()
-  window.wsDebug = () => wsWindow.show()
 }
+
+mutex.lock('atom-socket:running').then((lockStats) => {
+  console.debug('lock:', lockStats)
+
+  var isManagerRunning = BrowserWindow.getAllWindows().some((win) => {
+    return win.getTitle() === localStorage.getItem('atom-socket:running')
+  })
+
+  if (!isManagerRunning) { startManager() }
+
+  return mutex.release('atom-socket:running')
+})
 
 module.exports = class AtomSocket {
   constructor(key, url) {
     this.key = key
     this.url = url
-    
+
     waitForWSManager.then(() => {
       bus.emit('create', {key: this.key, url: this.url, time: Date.now()})
     })

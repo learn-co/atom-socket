@@ -14,7 +14,9 @@ const openAll = () => {
 
 console.log(`current process is ${process.pid}`)
 
-bus.emit('manager:ready', Date.now())
+setInterval(() => {
+  bus.emit('manager:ready', Date.now())
+}, 500)
 
 window.onbeforeunload = () => {
   localStorage.removeItem('atom-socket:running')

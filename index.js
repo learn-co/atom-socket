@@ -2,12 +2,12 @@ const path = require('path')
 const bus = require('page-bus')()
 const chunker = require('./chunker')
 const FastMutex = require('fast-mutex')
-const mutex = new FastMutex()
 
 // Atom API
 const {BrowserWindow} = require('electron').remote
 
 const sockets = {}
+const mutex = new FastMutex()
 
 var wsWindow
 

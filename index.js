@@ -1,13 +1,12 @@
 const path = require('path')
 const bus = require('page-bus')()
 const chunker = require('./chunker')
-const FastMutex = require('fast-mutex')
+const tabex = require('tabex').client()
 
 // Atom API
 const {BrowserWindow} = require('electron').remote
 
 const sockets = {}
-const mutex = new FastMutex()
 
 var wsWindow
 
@@ -16,23 +15,27 @@ const waitForWSManager = new Promise((resolve, reject) => {
 })
 
 const startManager = () => {
-  var id = Date.now().toString()
-  localStorage.setItem('atom-socket:running', id)
-  wsWindow = new BrowserWindow({show: false, title: id, webPreferences: {devTools: true}})
-  wsWindow.loadURL(`file://${ path.join(__dirname, 'websocket.html') }`)
-  wsWindow.webContents.openDevTools()
+  return new Promise((resolve, reject) => {
+    var id = Date.now().toString()
+    localStorage.setItem('atom-socket:running', id)
+
+    var win = new BrowserWindow({show: false, title: id})
+    win.loadURL(`file://${path.join(__dirname, 'websocket.html')}`)
+    win.webContents.openDevTools()
+    win.on('ready-to-show', resolve)
+  })
 }
 
-mutex.lock('atom-socket:running').then((lockStats) => {
-  console.debug('lock:', lockStats)
-
+tabex.lock('atom-socket:running', (unlock) => {
   var isManagerRunning = BrowserWindow.getAllWindows().some((win) => {
     return win.getTitle() === localStorage.getItem('atom-socket:running')
   })
 
-  if (!isManagerRunning) { startManager() }
-
-  return mutex.release('atom-socket:running')
+  if (!isManagerRunning) {
+    startManager().then(unlock)
+  } else {
+    unlock()
+  }
 })
 
 module.exports = class AtomSocket {

@@ -1,49 +1,15 @@
-const path = require('path')
 const bus = require('page-bus')()
 const chunker = require('./chunker')
-const tabex = require('tabex').client()
+const manager = require('./manager')
 
-// Atom API
-const {BrowserWindow} = require('electron').remote
-
-const sockets = {}
-
-var wsWindow
-
-const waitForWSManager = new Promise((resolve, reject) => {
-  bus.on('manager:ready', resolve)
-})
-
-const startManager = () => {
-  return new Promise((resolve, reject) => {
-    var id = Date.now().toString()
-    localStorage.setItem('atom-socket:running', id)
-
-    var win = new BrowserWindow({show: false, title: id})
-    win.loadURL(`file://${path.join(__dirname, 'websocket.html')}`)
-    win.webContents.openDevTools()
-    win.on('ready-to-show', resolve)
-  })
-}
-
-tabex.lock('atom-socket:running', (unlock) => {
-  var isManagerRunning = BrowserWindow.getAllWindows().some((win) => {
-    return win.getTitle() === localStorage.getItem('atom-socket:running')
-  })
-
-  if (!isManagerRunning) {
-    startManager().then(unlock)
-  } else {
-    unlock()
-  }
-})
+manager.start()
 
 module.exports = class AtomSocket {
   constructor(key, url) {
     this.key = key
     this.url = url
 
-    waitForWSManager.then(() => {
+    manager.onReady(() => {
       bus.emit('create', {key: this.key, url: this.url, time: Date.now()})
     })
   }
@@ -73,10 +39,6 @@ module.exports = class AtomSocket {
   }
 
   toggleDebugger() {
-    var win = BrowserWindow.getAllWindows().find((win) => {
-      return win.getTitle() === localStorage.getItem('atom-socket:running')
-    })
-    if (!win) { return }
-    win.isVisible() ? win.hide() : win.show()
+    manager.toggle()
   }
 }

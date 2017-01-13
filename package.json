@@ -2,7 +2,7 @@
   "name": "atom-socket",
   "version": "0.0.6",
   "description": "Share websockets in Atom Packages",
-  "main": "index.js",
+  "main": "lib/atom-socket",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "learn-reconnecting-websocket": "^1.0.1",
-    "page-bus": "3.0.1"
+    "page-bus": "3.0.1",
+    "tabex": "^1.0.5"
   }
 }

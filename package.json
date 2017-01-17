@@ -9,7 +9,6 @@
   "author": "Josh Rowley",
   "license": "MIT",
   "dependencies": {
-    "learn-reconnecting-websocket": "^1.0.1",
     "page-bus": "3.0.1",
     "tabex": "^1.0.5"
   }

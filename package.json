@@ -1,6 +1,6 @@
 {
   "name": "atom-socket",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Share websockets in Atom Packages",
   "main": "lib/atom-socket",
   "scripts": {
